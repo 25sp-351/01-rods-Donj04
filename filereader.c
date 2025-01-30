@@ -1,4 +1,4 @@
-#include "file_reader.h"
+#include "filereader.h"
 
 #include <ctype.h>
 #include <stdbool.h>
@@ -7,7 +7,7 @@
 
 #include "keypair.h"
 
-bool isBlankLine(char *line) {
+bool isBlankLine(char* line) {
     if (line[0] == '#')
         return true;
     for (int i = 0; i < strlen(line); i++)
@@ -16,17 +16,17 @@ bool isBlankLine(char *line) {
     return true;
 }
 
-char *trimNewline(char *text) {
+char* trimNewline(char* text) {
     size_t size = strlen(text);
     if (size > 0 && text[size - 1] == '\n')
         text[size - 1] = '\0';
     return text;
 }
 
-bool extractFile(char filename[]) {
+bool extractFile(char filename[], RodCutSolver* solver) {
     printf("Reading %s\n", filename);
 
-    FILE *file = fopen(filename, "r");
+    FILE* file = fopen(filename, "r");
 
     if (file == NULL) {
         printf("Error opening %s\n", filename);
@@ -39,15 +39,21 @@ bool extractFile(char filename[]) {
         if (!isBlankLine(line)) {
             int length;
             int value;
-            // If either variable was not successfully converted, return error
-            if (sscanf(line, "%d,%d", &length, &value) != 2) {
+            // Checks if both variables were successfully converted
+            if (sscanf(line, "%d,%d", &length, &value) == 2) {
+                printf("Scanning %s\n", trimNewline(line));
+                
+                KeyPair pair = createKeyPair(length, value);
+                addLength(solver, pair);
+
+            } else {
                 printf(
                     "ERROR: line \"%s\" is invalid. Format should be "
                     "<int>,<int>\n",
                     trimNewline(line));
                 return false;
             }
-            printf("%s\n", trimNewline(line));
+
         } else
             printf("Ignoring %s\n", trimNewline(line));
 

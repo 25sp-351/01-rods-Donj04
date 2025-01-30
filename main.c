@@ -4,8 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "file_reader.h"
 
+#include "filereader.h"
+#include "rodcutsolver.h"
 
 // Return true if there are at least 2 command-line arguments and they are valid
 bool validateInput(int argument_count, char *arguments[]) {
@@ -38,21 +39,19 @@ bool validateInput(int argument_count, char *arguments[]) {
     return (length_valid && file_valid);
 }
 
-void computeRodCutting(int length) {
-    printf("Computing rod cutting problem with a rod length of %d\n", length);
-}
-
 void printOutput() {
     printf("Complete\n");
 }
 
 int main(int argc, char *argv[]) {
     // Continue if inputs were valid and file was extracted correctly
-    if (validateInput(argc, argv) && extractFile(argv[2])) {
+    if (validateInput(argc, argv)) {
         int rod_length;
         sscanf(argv[1], "%d", &rod_length);
 
-        computeRodCutting(rod_length);
+        RodCutSolver solver = createRodCutSolver();
+        extractFile(argv[2], &solver);
+        solveRodCutting(&solver, rod_length);
         printOutput();
         return 0;
     } else {
