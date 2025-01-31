@@ -1,6 +1,6 @@
 #include "keypair.h"
 
-KeyPair createKeyPair(int key, int value) {
+KeyPair createKeyPair(size_t key, int value) {
     KeyPair new_pair;
     setKey(&new_pair, key);
     setValue(&new_pair, value);
@@ -8,7 +8,7 @@ KeyPair createKeyPair(int key, int value) {
 }
 
 // Setter functions
-void setKey(KeyPair* pair, int new_key) {
+void setKey(KeyPair* pair, size_t new_key) {
     pair->key = new_key;
 }
 
@@ -17,7 +17,7 @@ void setValue(KeyPair* pair, int new_value) {
 }
 
 // Getter functions
-int getKey(KeyPair* pair) {
+size_t getKey(KeyPair* pair) {
     return pair->key;
 }
 

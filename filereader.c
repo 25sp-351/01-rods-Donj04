@@ -10,7 +10,7 @@
 bool isBlankLine(char* line) {
     if (line[0] == '#')
         return true;
-    for (int i = 0; i < strlen(line); i++)
+    for (size_t i = 0; i < strlen(line); i++)
         if (!isspace(line[i]))
             return false;
     return true;
@@ -41,16 +41,14 @@ bool extractFile(char filename[], RodCutSolver* solver) {
             int value;
             // Checks if both variables were successfully converted
             if (sscanf(line, "%d,%d", &length, &value) == 2) {
-                printf("Scanning %s\n", trimNewline(line));
-                
                 KeyPair pair = createKeyPair(length, value);
                 addLength(solver, pair);
 
             } else {
                 printf(
-                    "ERROR: line \"%s\" is invalid. Format should be "
+                    "ERROR: line \"%s\" in %s is invalid. Format should be "
                     "<int>,<int>\n",
-                    trimNewline(line));
+                    trimNewline(line), filename);
                 return false;
             }
 

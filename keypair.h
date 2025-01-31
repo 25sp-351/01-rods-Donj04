@@ -1,20 +1,22 @@
 #ifndef KEYPAIR_H
 #define KEYPAIR_H
 
+#include <stdlib.h>
+
 typedef struct {
-    int key;
+    size_t key;
     int value;
 } KeyPair;
 
-KeyPair createKeyPair(int key, int value);
+KeyPair createKeyPair(size_t key, int value);
 
 // Setter functions
-void setKey(KeyPair* pair, int new_key);
+void setKey(KeyPair* pair, size_t new_key);
 
 void setValue(KeyPair* pair, int new_value);
 
 // Getter functions
-int getKey(KeyPair* pair);
+size_t getKey(KeyPair* pair);
 
 int getValue(KeyPair* pair);
 

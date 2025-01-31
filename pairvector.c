@@ -78,7 +78,7 @@ bool popPair(PairVector* vector) {
     return removePair(vector, vector->size - 1);
 }
 
-KeyPair getPair(PairVector* vector, int index) {
+KeyPair getPairCopy(PairVector* vector, int index) {
     if (index >= 0 && index < vector->size) {
         return vector->pairs[index];
     } else {
@@ -90,13 +90,32 @@ KeyPair getPair(PairVector* vector, int index) {
     }
 }
 
+KeyPair* getPairRef(PairVector* vector, int index) {
+    if (index >= 0 && index < vector->size) {
+        return &(vector->pairs[index]);
+    } else {
+        fprintf(stderr, "ERROR: Index out of bounds\n");
+        return NULL;
+    }
+}
+
 int findPair(PairVector* vector, KeyPair pair) {
     for (size_t i = 0; i < vector->size; i++) {
-        int key   = getKey(&(vector->pairs[i]));
-        int value = getValue(&(vector->pairs[i]));
+        size_t key = getKey(&(vector->pairs[i]));
+        int value  = getValue(&(vector->pairs[i]));
         if (key == getKey(&pair) && value == getValue(&pair))
             return i;
     }
     printf("Pair not found\n");
+    return -1;
+}
+
+int findPairByKey(PairVector* vector, size_t search_key) {
+    for (size_t i = 0; i < vector->size; i++) {
+        size_t key = getKey(&(vector->pairs[i]));
+        if (search_key == key)
+            return i;
+    }
+    // printf("Pair not found\n");
     return -1;
 }

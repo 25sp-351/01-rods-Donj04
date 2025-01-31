@@ -26,8 +26,12 @@ bool removePair(PairVector* vector, int index);
 
 bool popPair(PairVector* vector);
 
-KeyPair getPair(PairVector* vector, int index);
+KeyPair getPairCopy(PairVector* vector, int index);
+
+KeyPair* getPairRef(PairVector* vector, int index);
 
 int findPair(PairVector* vector, KeyPair pair);
+
+int findPairByKey(PairVector* vector, size_t search_key);
 
 #endif

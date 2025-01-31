@@ -17,7 +17,7 @@ bool validateInput(int argument_count, char *arguments[]) {
     if (argument_count > 2) {
         // length is valid if the 1st argument was converted correctly to int
         // and is not negative
-        length_valid = (sscanf(arguments[1], "%d", &input) != 0 && input >= 0);
+        length_valid = (sscanf(arguments[1], "%d", &input) != 0 && input > 0);
         // File is valid if it exists
         // extractFile() will return an error if contents are invalid
         file_valid = (access(arguments[2], F_OK) == 0);
@@ -25,13 +25,13 @@ bool validateInput(int argument_count, char *arguments[]) {
         if (!length_valid)
             printf(
                 "ERROR: \"%s\" is an invalid length input. "
-                "Please enter a positive integer.\n",
+                "Please enter an integer greater than 0.\n",
                 arguments[1]);
         if (!file_valid)
             printf("ERROR: \"%s\" is not a valid file path.\n", arguments[2]);
     } else {
         printf(
-            "ERROR: Not enough arguments given. Please provide a positive "
+            "ERROR: Not enough arguments given. Please provide an "
             "integer and "
             "a valid file path.\n");
     }
@@ -46,14 +46,20 @@ void printOutput() {
 int main(int argc, char *argv[]) {
     // Continue if inputs were valid and file was extracted correctly
     if (validateInput(argc, argv)) {
-        int rod_length;
-        sscanf(argv[1], "%d", &rod_length);
+        size_t rod_length;
+        sscanf(argv[1], "%zu", &rod_length);
 
-        RodCutSolver solver = createRodCutSolver();
-        extractFile(argv[2], &solver);
-        solveRodCutting(&solver, rod_length);
-        printOutput();
-        return 0;
+        RodCutSolver solver = createRodCutSolver(rod_length);
+        if (extractFile(argv[2], &solver)) {
+            solveRodCutting(&solver);
+            printOutput();
+            
+            freeRodCutSolver(&solver);
+            return 0;
+        } else {
+            freeRodCutSolver(&solver);
+            return 1;
+        }
     } else {
         return 1;
     }

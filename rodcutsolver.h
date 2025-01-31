@@ -5,10 +5,12 @@
 
 typedef struct
 {
-    PairVector pairs;
+    PairVector given_lengths_values;
+    PairVector solution_pairs;
+    size_t rod_length;
 } RodCutSolver;
 
-RodCutSolver createRodCutSolver();
+RodCutSolver createRodCutSolver(size_t rod_length);
 
 void freeRodCutSolver(RodCutSolver* solver);
 
@@ -16,6 +18,6 @@ bool addLength(RodCutSolver* solver, KeyPair pair);
 
 bool removeLength(RodCutSolver* solver, KeyPair pair);
 
-PairVector solveRodCutting(RodCutSolver* solver, int rod_length);
+PairVector solveRodCutting(RodCutSolver* solver);
 
 #endif
