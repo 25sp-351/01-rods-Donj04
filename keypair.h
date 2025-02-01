@@ -10,14 +10,4 @@ typedef struct {
 
 KeyPair createKeyPair(size_t key, int value);
 
-// Setter functions
-void setKey(KeyPair* pair, size_t new_key);
-
-void setValue(KeyPair* pair, int new_value);
-
-// Getter functions
-size_t getKey(KeyPair* pair);
-
-int getValue(KeyPair* pair);
-
 #endif

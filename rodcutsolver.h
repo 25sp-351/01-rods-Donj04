@@ -1,23 +1,21 @@
 #ifndef RODCUTSOLVER_H
 #define RODCUTSOLVER_H
 
-#include "pairvector.h"
+#include "vec.h"
 
 typedef struct
 {
-    PairVector given_lengths_values;
-    PairVector solution_pairs;
+    Vec length_prices;
     size_t rod_length;
+    Vec cut_list;
+    int result_value;
+    size_t remainder;
 } RodCutSolver;
 
 RodCutSolver createRodCutSolver(size_t rod_length);
 
-void freeRodCutSolver(RodCutSolver* solver);
+void setLengthPrices(RodCutSolver* solver, Vec v);
 
-bool addLength(RodCutSolver* solver, KeyPair pair);
-
-bool removeLength(RodCutSolver* solver, KeyPair pair);
-
-PairVector solveRodCutting(RodCutSolver* solver);
+void solveRodCutting(RodCutSolver* solver);
 
 #endif

@@ -39,10 +39,6 @@ bool validateInput(int argument_count, char *arguments[]) {
     return (length_valid && file_valid);
 }
 
-void printOutput() {
-    printf("Complete\n");
-}
-
 int main(int argc, char *argv[]) {
     // Continue if inputs were valid and file was extracted correctly
     if (validateInput(argc, argv)) {
@@ -50,16 +46,9 @@ int main(int argc, char *argv[]) {
         sscanf(argv[1], "%zu", &rod_length);
 
         RodCutSolver solver = createRodCutSolver(rod_length);
-        if (extractFile(argv[2], &solver)) {
-            solveRodCutting(&solver);
-            printOutput();
-            
-            freeRodCutSolver(&solver);
-            return 0;
-        } else {
-            freeRodCutSolver(&solver);
-            return 1;
-        }
+        setLengthPrices(&solver, extractFile(argv[2]));
+        solveRodCutting(&solver);
+        return 0;
     } else {
         return 1;
     }

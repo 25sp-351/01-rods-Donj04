@@ -23,38 +23,39 @@ char* trimNewline(char* text) {
     return text;
 }
 
-bool extractFile(char filename[], RodCutSolver* solver) {
+Vec extractFile(char filename[]) {
     printf("Reading %s\n", filename);
 
-    FILE* file = fopen(filename, "r");
+    FILE* file  = fopen(filename, "r");
+
+    Vec lengths = new_vec(sizeof(KeyPair));
 
     if (file == NULL) {
         printf("Error opening %s\n", filename);
-        return false;
-    }
+    } else {
+        char line[FILE_MAX_LINE_LENGTH];
 
-    char line[FILE_MAX_LINE_LENGTH];
-
-    while (fgets(line, FILE_MAX_LINE_LENGTH, file))
-        if (!isBlankLine(line)) {
-            int length;
-            int value;
-            // Checks if both variables were successfully converted
-            if (sscanf(line, "%d,%d", &length, &value) == 2) {
-                KeyPair pair = createKeyPair(length, value);
-                addLength(solver, pair);
-
+        while (fgets(line, FILE_MAX_LINE_LENGTH, file)) {
+            if (isBlankLine(line)) {
+                printf("Ignoring %s\n", trimNewline(line));
             } else {
-                printf(
-                    "ERROR: line \"%s\" in %s is invalid. Format should be "
-                    "<int>,<int>\n",
-                    trimNewline(line), filename);
-                return false;
+                int length;
+                int value;
+                // Convert numbers and check if valid for both
+                if (2 == sscanf(line, "%d,%d", &length, &value) && length >= 0) {
+                    KeyPair pair = createKeyPair(length, value);
+                    vec_add(lengths, &pair);
+                    printf("Added length %d, $%d\n", length, value);
+                } else {
+                    printf(
+                        "ERROR: line \"%s\" in %s is invalid. Format should be "
+                        "<+int>,<int>\n",
+                        trimNewline(line), filename);
+                    // break;
+                }
             }
-
-        } else
-            printf("Ignoring %s\n", trimNewline(line));
-
+        }
+    }
     fclose(file);
-    return true;
+    return lengths;
 }

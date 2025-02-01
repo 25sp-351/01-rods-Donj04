@@ -1,137 +1,107 @@
 #include "rodcutsolver.h"
 
+#include <limits.h>
+#include <stdbool.h>
 #include <stdio.h>
+
+#include "keypair.h"
 
 RodCutSolver createRodCutSolver(size_t rod_length) {
     RodCutSolver solver;
-    PairVector new_given_vec    = createPairVector(BASE_VEC_CAPACITY);
-    PairVector new_solution_vec = createPairVector(BASE_VEC_CAPACITY);
-
-    solver.given_lengths_values = new_given_vec;
-    solver.solution_pairs       = new_solution_vec;
-    solver.rod_length           = rod_length;
+    solver.rod_length    = rod_length;
+    solver.length_prices = new_vec(sizeof(KeyPair));
+    solver.cut_list      = new_vec(sizeof(KeyPair));
+    solver.result_value  = 0;
+    solver.remainder     = 0;
     return solver;
 }
 
 void freeRodCutSolver(RodCutSolver* solver) {
-    freePairVector(&(solver->given_lengths_values));
-    freePairVector(&(solver->solution_pairs));
-    solver->rod_length = 0;
+    vec_free(solver->length_prices);
+    vec_free(solver->cut_list);
 }
 
-bool addLength(RodCutSolver* solver, KeyPair pair) {
-    bool added = pushPair(&(solver->given_lengths_values), pair);
-    if (added)
-        printf("Added length %zu, value %d\n", getKey(&pair), getValue(&pair));
-    return added;
+void setLengthPrices(RodCutSolver* solver, Vec v) {
+    vec_free(solver->length_prices);
+    solver->length_prices = vec_copy(v);
 }
 
-bool removeLength(RodCutSolver* solver, KeyPair pair) {
-    bool removed;
-    int index_to_remove = findPair(&(solver->given_lengths_values), pair);
+void setCutList(RodCutSolver* solver, size_t cuts[]) {
+    size_t temp_length = solver->rod_length;
 
-    if (index_to_remove >= 0)
-        removed = removePair(&(solver->given_lengths_values), index_to_remove);
-    else
-        removed = false;
-    if (removed)
-        printf("Removed length %zu, value %d\n", getKey(&pair),
-               getValue(&pair));
-    return removed;
-}
+    while (temp_length > 0) {
+        size_t cut = cuts[temp_length];
+        printf("%zu\n", cut);
 
-void addSolutionLength(RodCutSolver* solver, size_t length) {
-    int index = findPairByKey(&(solver->solution_pairs), length);
-
-    if (index >= 0) {
-        KeyPair* pair = getPairRef(&(solver->given_lengths_values), index);
-        setValue(pair, getValue(pair) + 1);
-    } else {
-        KeyPair new_pair = createKeyPair(length, 1);
-        pushPair(&(solver->solution_pairs), new_pair);
-    }
-}
-
-void removeSolutionLength(RodCutSolver* solver, size_t length) {
-    int index = findPairByKey(&(solver->solution_pairs), length);
-
-    if (index >= 0) {
-        KeyPair* pair = getPairRef(&(solver->given_lengths_values), index);
-        setValue(pair, getValue(pair) - 1);
-        if (getValue(pair) <= 0)
-            removeLength(solver, *pair);
-    }
-}
-
-int cutRod(RodCutSolver* solver, size_t* lengths_arr, size_t remaining_length, size_t recursion_depth) {
-    if (remaining_length <= 0)
-        return 0;
-
-    int max            = 0;
-
-    for (size_t i = 0; i < solver->given_lengths_values.size; i++) {
-        KeyPair pair    = getPairCopy(&(solver->given_lengths_values), i);
-        size_t length   = getKey(&pair);
-        int value       = getValue(&pair);
-
-        int total_value = 0;
-        // printf("checking length %zu\n", length);
-        if (length <= remaining_length)
-            total_value = value + cutRod(solver, lengths_arr, remaining_length - length, recursion_depth + 1);
-        if (total_value > 0 && total_value >= max) {
-            max         = total_value;
-            // ? TODO: total price is correct, but does not show lengths correctly
-            lengths_arr[recursion_depth] = length;
-            // for (size_t i = recursion_depth + 1; i < solver->rod_length; i++)
-            // {
-            //     lengths_arr[i] = 0;
-            // }
-            
-            printf("recursion: %zu, length %zu, $%d\n", recursion_depth, length, max);
+        bool unique = true;
+        for (size_t i = 0; i < vec_length(solver->cut_list); i++) {
+            // Get a pointer to the pair at this index of the vec
+            KeyPair* pair = &((KeyPair*)vec_items(solver->cut_list))[i];
+            if (cut > 0 && pair->key == cut) {
+                pair->value++;
+                unique = false;
+                break;
+            }
         }
+        if (unique) {
+            KeyPair new_pair = createKeyPair(cut, 1);
+            vec_add(solver->cut_list, &new_pair);
+        }
+        temp_length -= cut;
     }
-    return max;
+    solver->remainder = temp_length;
 }
 
-PairVector solveRodCutting(RodCutSolver* solver) {
-    printf("Computing rod cutting problem with a rod length of %zu\n",
-           solver->rod_length);
+void printOutput(RodCutSolver solver, int prices[]) {
+    for (size_t i = 0; i < vec_length(solver.cut_list); i++) {
+        KeyPair* pair = &((KeyPair*)vec_items(solver.cut_list))[i];
 
-    printf("%zu pairs\n", solver->given_lengths_values.size);
+        int price = prices[pair->key];
+        printf("%zu @ %d = %d\n", pair->key, pair->value, pair->value * price);
+    }
+    printf("Remainder: %zu\n", solver.remainder);
+    printf("Value: %d\n", solver.result_value);
+}
 
-    size_t arr_size = solver->rod_length;
-    size_t* lengths = (size_t*)malloc(arr_size * sizeof(size_t));
-    if (lengths == NULL) {
-        printf("ERROR: Memory allocation failed\n");
+void solveRodCutting(RodCutSolver* solver) {
+    size_t arr_size = solver->rod_length + 1;
+    int prices[arr_size];
+    int max_profit[arr_size];
+    size_t cuts[arr_size];
+
+    // Initialize elements of arrays
+    for (size_t i = 0; i < arr_size; i++) {
+        prices[i]     = 0;
+        max_profit[i] = 0;
+        cuts[i]       = 0;
     }
+    // Set length prices. Each index in prices[] corresponds to a length
+    for (size_t j = 0; j < vec_length(solver->length_prices); j++) {
+        // Get KeyPair at index j
+        KeyPair pair = ((KeyPair*)vec_items(solver->length_prices))[j];
+        if (pair.key < arr_size)
+            prices[pair.key] = pair.value;
+    }
+
+    // debug
     for (size_t i = 0; i < arr_size; i++)
-    {
-        lengths[i] = 0;
-    }
-    
-    
-    int result = cutRod(solver, lengths, solver->rod_length, 0);
-    for (size_t i = 0; i < arr_size; i++)
-    {
-        printf("%zu, ", lengths[i]);
-    }
+        printf("%d ", prices[i]);
     printf("\n");
-    
 
-    printf("Result: $%d\n", result);
-
-    printf("Ok, did calculation\n");
-    PairVector p = createPairVector(BASE_VEC_CAPACITY);
-    free(lengths);
-    return p;
-}
-
-int findMax(int* array, size_t size) {
-    if (size <= 0)
-        return 0;
-    int max = array[0];
-    for (size_t i = 0; i < size; i++)
-        if (array[i] > max)
-            max = array[i];
-    return max;
+    // Algorithm to solve rod cutting problem
+    // for some reason 1 is included in the cuts even when it has 0 price
+    for (size_t length = 1; length <= solver->rod_length; length++) {
+        int curr_max = 0;
+        for (size_t cut_length = 1; cut_length <= length; cut_length++) {
+            int profit = prices[cut_length] + max_profit[length - cut_length];
+            if (profit > curr_max) {
+                curr_max     = profit;
+                cuts[length] = cut_length;
+            }
+        }
+        max_profit[length] = curr_max;
+    }
+    solver->result_value = max_profit[solver->rod_length];
+    setCutList(solver, cuts);
+    printOutput(*solver, prices);
 }
