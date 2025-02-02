@@ -62,3 +62,10 @@ void* vec_items(Vec v) {
     }
     return v->base;
 }
+
+void* vec_get(Vec v, size_t index) {
+    if (index >= vec_length(v))
+        return NULL;
+    // cast to char* to do pointer arithmetic correctly
+    return (char*)vec_items(v) + (index * v->element_size);
+}

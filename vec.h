@@ -22,6 +22,8 @@ void vec_add(Vec v, void* item);
 
 // do not retain this across vec_add calls!
 // Never returns NULL, even for empty lists
-void* vec_items( Vec v );
+void* vec_items(Vec v);
+
+void* vec_get(Vec v, size_t index);
 
 #endif

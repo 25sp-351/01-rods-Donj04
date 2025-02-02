@@ -2,6 +2,7 @@
 #define FILE_READER_H
 
 #include <stdbool.h>
+
 #include "rodcutsolver.h"
 #include "vec.h"
 
@@ -11,6 +12,8 @@
 bool isBlankLine(char *line);
 
 char *trimNewline(char *text);
+
+bool validateInput(int argument_count, char *arguments[]);
 
 Vec extractFile(char filename[]);
 
