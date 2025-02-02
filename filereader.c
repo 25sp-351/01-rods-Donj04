@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "keypair.h"
 
@@ -23,19 +24,20 @@ char* trimNewline(char* text) {
     return text;
 }
 
-// Return true if there are at least 2 command-line arguments and they are valid
-bool validateInput(int argument_count, char* arguments[]) {
-    int input;
-    bool length_valid = false;
-    bool file_valid   = false;
+bool validateLength(char* input, long int* num) {
+    return sscanf(input, "%ld", num) == 1 && *num > 0 && *num <= INT_MAX;
+}
 
-    if (argument_count != 3) {
-        // length is valid if the 1st argument was converted correctly to int
-        // and is not negative
-        length_valid = (sscanf(arguments[1], "%d", &input) != 0 && input > 0);
-        // File is valid if it exists
-        // extractFile() will return an error if contents are invalid
-        file_valid = (access(arguments[2], F_OK) == 0);
+bool validateFile(char* filename) {
+    return access(filename, F_OK) == 0;
+}
+
+bool validateInput(int argument_count, char* arguments[]) {
+    if (argument_count == 3) {
+        long int num = 0; // only for validateLength()
+        
+        bool length_valid = validateLength(arguments[1], &num);
+        bool file_valid   = validateFile(arguments[2]);
 
         if (!length_valid)
             printf(
@@ -44,13 +46,14 @@ bool validateInput(int argument_count, char* arguments[]) {
                 arguments[1]);
         if (!file_valid)
             printf("ERROR: \"%s\" is not a valid file path.\n", arguments[2]);
+        return length_valid && file_valid;
     } else {
         printf(
             "Usage: %s length /path/to/lengths.txt\n"
             "length = integer > 0\n",
             arguments[0]);
+        return false;
     }
-    return (length_valid && file_valid);
 }
 
 Vec extractFile(char filename[]) {

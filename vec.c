@@ -16,6 +16,8 @@ Vec new_vec(size_t element_size) {
     Vec v           = malloc(sizeof(struct vec));
     v->element_size = element_size;
     v->base         = NULL;
+    v->allocated    = 0;
+    v->length       = 0;
     return v;
 }
 

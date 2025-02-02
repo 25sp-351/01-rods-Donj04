@@ -6,17 +6,15 @@
 #include "keypair.h"
 
 // typedef struct rodcutsolver {
-//     size_t rod_length;
 //     Vec length_prices;  // Keypair = {length, price of length}
 //     Vec cut_list;       // Keypair = {length, number of pieces}
 //     int result_profit;
 //     size_t remainder;
 // } *RodCutSolver;
 
-RodCutSolver createRodCutSolver(size_t rod_length) {
+RodCutSolver createRodCutSolver(Vec new_prices) {
     RodCutSolver solver   = malloc(sizeof(struct rodcutsolver));
-    solver->rod_length    = rod_length;
-    solver->length_prices = new_vec(sizeof(KeyPair));
+    solver->length_prices = vec_copy(new_prices);
     solver->cut_list      = new_vec(sizeof(KeyPair));
     solver->result_profit = 0;
     solver->remainder     = 0;
@@ -33,10 +31,13 @@ void setLengthPrices(RodCutSolver solver, Vec v) {
     solver->length_prices = vec_copy(v);
 }
 
-void setCutList(RodCutSolver solver, size_t cuts[]) {
-    size_t temp_length  = solver->rod_length;
+void setCutList(RodCutSolver solver, size_t rod_length, size_t cuts[]) {
+    vec_free(solver->cut_list);
+    solver->cut_list = new_vec(sizeof(KeyPair));
 
-    int remaining_loops = solver->rod_length;  // To prevent infinite loops
+    size_t temp_length  = rod_length;
+
+    int remaining_loops = rod_length;  // To prevent infinite loops
     while (temp_length > 0 && remaining_loops > 0) {
         size_t cut = cuts[temp_length];
 
@@ -73,8 +74,8 @@ void printOutput(RodCutSolver solver, int prices[]) {
     printf("Value: %d\n", solver->result_profit);
 }
 
-void solveRodCutting(RodCutSolver solver) {
-    size_t arr_size = solver->rod_length + 1;
+void solveRodCutting(RodCutSolver solver, size_t rod_length) {
+    size_t arr_size = rod_length + 1;
     int prices[arr_size];
     int max_profit[arr_size];
     size_t cuts[arr_size];
@@ -87,7 +88,6 @@ void solveRodCutting(RodCutSolver solver) {
     }
     // Set length prices. Each index in prices[] corresponds to a length
     for (size_t j = 0; j < vec_length(solver->length_prices); j++) {
-        // Get KeyPair at index j
         KeyPair* pair = vec_get(solver->length_prices, j);
         if (pair->key < arr_size)
             prices[pair->key] = pair->value;
@@ -99,7 +99,7 @@ void solveRodCutting(RodCutSolver solver) {
     // printf("\n");
 
     // Algorithm to solve rod cutting problem
-    for (size_t first_cut = 1; first_cut <= solver->rod_length; first_cut++) {
+    for (size_t first_cut = 1; first_cut <= rod_length; first_cut++) {
         int curr_max = 0;
         int best_cut = 0;
 
@@ -115,7 +115,7 @@ void solveRodCutting(RodCutSolver solver) {
         max_profit[first_cut] = curr_max;
         cuts[first_cut]       = best_cut;
     }
-    solver->result_profit = max_profit[solver->rod_length];
-    setCutList(solver, cuts);
+    solver->result_profit = max_profit[rod_length];
+    setCutList(solver, rod_length, cuts);
     printOutput(solver, prices);
 }
