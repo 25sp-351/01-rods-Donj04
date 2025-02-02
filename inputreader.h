@@ -26,4 +26,6 @@ bool validateInput(int argument_count, char *arguments[]);
 
 Vec extractFile(char filename[]);
 
+void processInput(Vec prices, char* input);
+
 #endif

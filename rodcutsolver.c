@@ -68,7 +68,7 @@ void printOutput(RodCutSolver solver, int prices[]) {
     for (size_t i = 0; i < vec_length(solver->cut_list); i++) {
         KeyPair* pair = vec_get(solver->cut_list, i);
         int price     = prices[pair->key];
-        printf("%zu @ %d = %d\n", pair->key, pair->value, pair->value * price);
+        printf("%d @ %zu = %d\n", pair->value, pair->key, pair->value * price);
     }
     printf("Remainder: %zu\n", solver->remainder);
     printf("Value: %d\n", solver->result_profit);
