@@ -6,26 +6,29 @@
 #include "rodcutsolver.h"
 #include "vec.h"
 
-#define FILE_MAX_LINES 128
-#define FILE_MAX_LINE_LENGTH 128
+extern size_t MAX_LINE_LENGTH;
 
-bool isBlankLine(char *line);
+bool isBlankLine(const char* line, size_t length);
 
-char *trimNewline(char *text);
+void trimNewline(char* text);
 
-// attempts to convert input string into an integer
-// returns true if successful and 0 < length <= MAX_INT
-bool validateLength(char* input, long int* num);
+// Attempts to return an input string as an integer
+long int writeLength(const char* input);
 
-// File is valid if it exists
-// extractFile() will return an error if contents are invalid
-bool validateFile(char* filename);
+// Returns true if 0 < length < INT_MAX
+bool validateLength(long int length);
 
-// Return true if there are at least 2 command-line arguments and they are valid
-bool validateInput(int argument_count, char *arguments[]);
+// Returns true if file exists and can be accessed
+bool validateFile(const char* filename);
 
-Vec extractFile(char filename[]);
+// Returns true if there are 3 or 4 command-line arguments and they are all
+// valid
+bool validateInput(int arg_count, char* args[]);
 
-void processInput(Vec prices, char* input);
+// Reads each line from a file and returns a vector of length value pairs
+Vec extractFile(const char* filename);
+
+// Validates the given input length and solves rod cutting problem
+void processInput(const Vec prices, const char* input);
 
 #endif
