@@ -1,7 +1,7 @@
 .history
 .jj
 .env
-.o
+*.o
 .ob
 .exe
 a.out

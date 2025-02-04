@@ -102,7 +102,7 @@ void readLine(char* line, Vec length_list, bool show_warnings) {
         // Check for duplicate lengths
         for (size_t ix = 0; ix < vec_length(length_list); ix++) {
             KeyPair* pair_p = vec_get(length_list, ix);
-            if (pair_p->key == read_length) {
+            if (pair_p->key == (size_t)read_length) {
                 if (show_warnings)
                     printf("WARNING: %ld is a duplicate length\n", read_length);
                 return;
