@@ -5,4 +5,5 @@
 .ob
 .exe
 a.out
+main
 node_modules/

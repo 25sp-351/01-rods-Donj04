@@ -1,48 +1,61 @@
+#include <ctype.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include "file_reader.h"
+
+
+// Return true if there are at least 2 command-line arguments and they are valid
+bool validateInput(int argument_count, char *arguments[]) {
+    int input;
+    bool length_valid = false;
+    bool file_valid   = false;
+
+    if (argument_count > 2) {
+        // length is valid if the 1st argument was converted correctly to int
+        // and is not negative
+        length_valid = (sscanf(arguments[1], "%d", &input) != 0 && input >= 0);
+        // File is valid if it exists
+        // extractFile() will return an error if contents are invalid
+        file_valid = (access(arguments[2], F_OK) == 0);
+
+        if (!length_valid)
+            printf(
+                "ERROR: \"%s\" is an invalid length input. "
+                "Please enter a positive integer.\n",
+                arguments[1]);
+        if (!file_valid)
+            printf("ERROR: \"%s\" is not a valid file path.\n", arguments[2]);
+    } else {
+        printf(
+            "ERROR: Not enough arguments given. Please provide a positive "
+            "integer and "
+            "a valid file path.\n");
+    }
+
+    return (length_valid && file_valid);
+}
+
+void computeRodCutting(int length) {
+    printf("Computing rod cutting problem with a rod length of %d\n", length);
+}
+
+void printOutput() {
+    printf("Complete\n");
+}
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        printf("Please input a rod length.\n");
+    // Continue if inputs were valid and file was extracted correctly
+    if (validateInput(argc, argv) && extractFile(argv[2])) {
+        int rod_length;
+        sscanf(argv[1], "%d", &rod_length);
+
+        computeRodCutting(rod_length);
+        printOutput();
+        return 0;
+    } else {
         return 1;
     }
-
-    int rod_length = atoi(argv[1]);
-    char input[50];
-    int entered_inputs = 0;
-    printf("The length of the rod is %d\n", rod_length);
-
-    while (1) {
-        int length;
-        int value;
-
-        printf(
-            "Enter a length followed by its value, seperated by a comma "
-            "(EOF to finish): ");
-        fgets(input, sizeof(input), stdin);
-        
-        // Check if input is end-of-file
-        if (feof(stdin)) { 
-            printf("\n"); // Makes sure the next print statement is on next line
-            break;
-        } else {
-            int num_count = sscanf(input, "%d, %d", &length, &value);
-            if (num_count != 2) {
-                printf(
-                    "Invalid input format. Input should be <length>, "
-                    "<value>\n");
-            } else {
-                printf("Entered length %d with value %d\n", length, value);
-                entered_inputs++;
-            }
-        }
-    }
-    printf("finished reading input\n");
-
-    if (entered_inputs < 1) {
-        printf("Please enter at lease one length and value\n");
-        return 1;
-    }
-
-    return 0;
 }
